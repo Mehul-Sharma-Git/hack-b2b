@@ -217,12 +217,14 @@ class HttpClient {
   async createOrganization(
     name: string,
     oldName: string,
-    currentOrgId: string
+    currentOrgId: string,
+    uid: string
   ): Promise<ApiResponse<Organization>> {
     try {
       const response = await this.client.post(`/org/${currentOrgId}/create`, {
-        Name: name,
-        OldName: oldName,
+        name: name,
+        oldName: oldName,
+        uid: uid,
       });
       return { Data: response.data };
     } catch (error) {
