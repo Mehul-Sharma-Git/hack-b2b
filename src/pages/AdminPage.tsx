@@ -728,7 +728,8 @@ const CreateOrgPopup = ({
         const response = await httpClient.createOrganization(
           orgName,
           currentUser.organizationName,
-          currentUser.organizationId
+          currentUser.organizationId,
+          currentUser.Id
         );
 
         if (response) {
