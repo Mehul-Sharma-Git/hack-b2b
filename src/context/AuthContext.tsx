@@ -34,8 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await httpClient.mockLogin(email, password);
     console.log(response);
     if (response.error) throw new Error(response.error);
-    if (response.data) {
-      const { userId, organizationsList, token } = response.data;
+    if (response.Data) {
+      const { userId, organizationsList, token } = response.Data;
       localStorage.setItem("token", token);
       httpClient.setToken(token);
       console.log(response);
@@ -45,8 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         organizationsList[0].id
       );
 
-      if (getUserData.data) {
-        setCurrentUser(getUserData.data);
+      if (getUserData.Data) {
+        setCurrentUser(getUserData.Data);
       }
     }
   };
@@ -57,8 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         currentUser.id,
         organizationId
       );
-      if (getUserData.data) {
-        setCurrentUser(getUserData.data);
+      if (getUserData.Data) {
+        setCurrentUser(getUserData.Data);
       }
     }
   };
