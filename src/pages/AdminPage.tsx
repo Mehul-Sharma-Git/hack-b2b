@@ -30,7 +30,7 @@ export function AdminPage() {
     setIsLoading(true);
     try {
       const [usersRes, inviteesRes, orgsRes] = await Promise.all([
-        httpClient.getUsers(),
+        httpClient.getUsers(currentUser?.organizationId || ""),
         httpClient.getInvitees(),
         httpClient.getOrganizations(),
       ]);

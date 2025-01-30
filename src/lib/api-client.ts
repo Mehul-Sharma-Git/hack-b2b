@@ -10,9 +10,10 @@ class HttpClient {
   private client: AxiosInstance;
 
   constructor(baseURL: string) {
+    console.log(baseURL);
     this.client = axios.create({
       baseURL,
-      timeout: 1000,
+      timeout: 5000,
     });
   }
 
@@ -28,7 +29,10 @@ class HttpClient {
     password: string
   ): Promise<ApiResponse<{ token: string; user: any }>> {
     try {
-      const response = await this.client.post("/login", { email, password });
+      const response = await this.client.post("/auth/login", {
+        email,
+        password,
+      });
       return { data: response.data };
     } catch (error) {
       return {
@@ -89,9 +93,9 @@ class HttpClient {
     this.clearToken();
   }
 
-  async getUsers(): Promise<ApiResponse<User[]>> {
+  async getUsers(id: string): Promise<ApiResponse<User[]>> {
     try {
-      const response = await this.client.get("/users");
+      const response = await this.client.get(`/org/${id}/users`);
       return { data: response.data };
     } catch (error) {
       return {
@@ -349,6 +353,16 @@ class HttpClient {
       }, 1000);
     });
   }
+  async testApi(): Promise<ApiResponse<any>> {
+    try {
+      const response = await this.client.get("/auth/test");
+      return { data: response.data };
+    } catch (error) {
+      return {
+        error: (error as any).response?.data?.message || "Failed to fetch data",
+      };
+    }
+  }
 
   async createOrganization(name: string): Promise<ApiResponse<Organization>> {
     try {
@@ -364,4 +378,8 @@ class HttpClient {
   }
 }
 
-export const httpClient = new HttpClient("http://localhost:3000");
+console.log(import.meta.env.VITE_API_BASE_URL);
+
+export const httpClient = new HttpClient(
+  import.meta.env.VITE_API_BASE_URL as string
+);
