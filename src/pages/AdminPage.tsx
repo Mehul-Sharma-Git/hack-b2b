@@ -87,6 +87,7 @@ export function AdminPage() {
       )
     );
 
+    console.log(userOrganizations);
     if (!hasPermission) {
       return (
         <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
@@ -122,7 +123,7 @@ export function AdminPage() {
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Id
+                        Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Role
@@ -146,9 +147,10 @@ export function AdminPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                              {user.Uid[0]}
+                              {user.Email[0]}
                             </div>
-                            <div className="ml-4">{user.Uid}</div>
+                            <div className="ml-4">{user.Email}</div>
+                            <div className="ml-4">{user.Username}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -444,7 +446,7 @@ export function AdminPage() {
             )}
             {userOrganizations.length ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {organizations.map((org, index) => (
+                {userOrganizations.map((org, index) => (
                   <div
                     key={org.OrgId}
                     className="nike-card hover:scale-[1.02] transition-transform duration-200"
