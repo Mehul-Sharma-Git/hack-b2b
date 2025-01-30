@@ -1,21 +1,29 @@
 export type Role = {
-  id: string;
-  name: string;
-  permissions: Permissions[];
+  Id: string;
+  Name: string;
+  Permissions: Permissions[];
 };
 
 export interface Permissions {
-  id: string;
-  name: string;
-  description: string;
+  Id: string;
+  Name: string;
+  Description: string;
 }
 
 export interface User {
-  id: string;
+  Id: string;
+  role: Role[];
   email: string;
-  role: Role;
   organizationId: string;
-  createdAt: string;
+  CreatedDate: string;
+}
+export interface GetOrganizationUserData {
+  Id: string;
+  Name: string;
+  Description: string;
+  Level: string;
+  OrgId: string;
+  Permissions: Permissions[];
 }
 
 export interface Invitee {
@@ -23,10 +31,14 @@ export interface Invitee {
   email: string;
   role: Role;
   status: "pending" | "accepted";
-  createdAt: string;
+  CreatedDate: string;
 }
 
 export interface Organization {
-  id: string;
-  name: string;
+  CreatedDate: string;
+  Id: string;
+  OrgId: string;
+  RoleId: string;
+  Uid: string;
+  Name: string;
 }

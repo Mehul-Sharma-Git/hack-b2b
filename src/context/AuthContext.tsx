@@ -15,10 +15,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [organizations, setOrganizations] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [email, setEmail] = useState("");
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -32,36 +31,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await httpClient.login(email, password);
-    console.log("login", response);
+
     if (response.error) throw new Error(response.error);
     if (response.Data) {
-      const { userId, organizationsList, token } = response.Data;
+      const { userId, organizationsList, token, email } = response.Data;
       localStorage.setItem("token", token);
       httpClient.setToken(token);
       console.log(response);
-      setOrganizations(organizationsList || []);
-      let getUserData;
-      if (organizationsList.length) {
-        getUserData = await httpClient.mockGetCurrentOrganizationData(
-          userId,
-          organizationsList[0]?.id
-        );
-      }
-
-      if (getUserData?.Data) {
-        setCurrentUser(getUserData.Data);
+      setOrganizations(organizationsList);
+      const getUserData = await httpClient.getCurrentOrganizationData(
+        userId,
+        organizationsList[0].OrgId
+      );
+      console.log("wdw", getUserData);
+      if (getUserData.Data) {
+        setEmail(email);
+        setCurrentUser({ ...getUserData.Data, email: email });
       }
     }
   };
 
   const switchOrgContext = async (organizationId: string) => {
     if (currentUser) {
-      const getUserData = await httpClient.mockGetCurrentOrganizationData(
-        currentUser.id,
+      const getUserData = await httpClient.getCurrentOrganizationData(
+        currentUser.Id,
         organizationId
       );
       if (getUserData.Data) {
-        setCurrentUser(getUserData.Data);
+        setCurrentUser({ ...getUserData.Data, email: email });
       }
     }
   };

@@ -7,63 +7,114 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
     try {
       await login(email, password);
       navigate("/admin");
     } catch (err: any) {
-      console.log(err);
-      setError(err.error);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <NikeLogo className="h-12 w-auto mx-auto text-white" />
-          <h2 className="mt-6 text-3xl font-bold text-white">Admin Portal</h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
+    <div className="min-h-screen nike-gradient flex items-center justify-center p-4">
+      <div className="w-full max-w-md animate-fade-in">
+        <div className="glass-effect rounded-2xl p-8 nike-shadow">
+          <div className="text-center mb-8">
+            <div className="inline-block p-3 rounded-full bg-white/10 mb-4 animate-scale-in">
+              <NikeLogo className="h-12 w-auto text-white transform transition-transform hover:scale-110" />
             </div>
-          )}
-          <div className="space-y-4">
-            <div>
-              <input
-                type="email"
-                required
-                className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                required
-                className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            <h2
+              className="text-3xl font-bold text-white mb-2 animate-slide-up"
+              style={{ animationDelay: "100ms" }}
+            >
+              Welcome Back
+            </h2>
+            <p
+              className="text-gray-300 animate-slide-up"
+              style={{ animationDelay: "200ms" }}
+            >
+              Sign in to access your admin portal
+            </p>
           </div>
 
-          <button
-            type="submit"
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          >
-            Sign in
-          </button>
-        </form>
+          <form onSubmit={handleLogin} className="space-y-6">
+            {error && (
+              <div className="animate-shake bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div
+              className="space-y-4 animate-slide-up"
+              style={{ animationDelay: "300ms" }}
+            >
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-300 mb-1.5"
+                >
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  className="w-full nike-input bg-white/10 border-white/10 text-white placeholder-gray-400
+                           focus:bg-white/20 focus:border-white/30"
+                  placeholder="you@nike.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-300 mb-1.5"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  className="w-full nike-input bg-white/10 border-white/10 text-white placeholder-gray-400
+                           focus:bg-white/20 focus:border-white/30"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full nike-button bg-white text-black hover:bg-gray-100 animate-slide-up"
+              style={{ animationDelay: "400ms" }}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <div className="loading-spinner border-black/10 border-t-black"></div>
+                  <span className="ml-2">Signing in...</span>
+                </span>
+              ) : (
+                "Sign in"
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
