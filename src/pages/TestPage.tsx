@@ -13,7 +13,7 @@ const TestPage: React.FC = () => {
         setError(data.error);
         return;
       }
-      setData(data.data);
+      setData(data.Data);
     });
   }, []);
 

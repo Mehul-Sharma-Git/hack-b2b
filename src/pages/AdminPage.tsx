@@ -12,14 +12,16 @@ export function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>("users");
   const [users, setUsers] = useState<User[]>([]);
   const [invitees, setInvitees] = useState<Invitee[]>([]);
+  const [showOrgDropdown, setShowOrgDropdown] = useState(false);
   const [userOrganizations, setUserOrganizations] = useState<Organization[]>(
     []
   );
+  const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [newInviteeEmail, setNewInviteeEmail] = useState("");
-  const [newInviteeRole, setNewInviteeRole] = useState<"admin" | "member">(
-    "member"
-  );
+  // const [newInviteeEmail, setNewInviteeEmail] = useState("");
+  // const [newInviteeRole, setNewInviteeRole] = useState<"admin" | "member">(
+  //   "member"
+  // );
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
@@ -31,13 +33,15 @@ export function AdminPage() {
     try {
       const [usersRes, inviteesRes, orgsRes] = await Promise.all([
         httpClient.getUsers(currentUser?.organizationId || ""),
-        httpClient.getInvitees(),
+        httpClient.getInvitees(currentUser?.organizationId || ""),
         httpClient.getOrganizations(),
+        httpClient.getRoles(currentUser?.organizationId || ""),
       ]);
-
-      if (usersRes.data) setUsers(usersRes.data);
-      if (inviteesRes.data) setInvitees(inviteesRes.data);
-      if (orgsRes.data) setUserOrganizations(orgsRes.data);
+      console.log(orgsRes);
+      if (usersRes.Data) setUsers(usersRes.Data.Data ?? []);
+      if (inviteesRes.Data) setInvitees(inviteesRes.Data.Data ?? []);
+      if (orgsRes.Data && orgsRes.Data.Data)
+        setUserOrganizations(orgsRes.Data.Data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -48,10 +52,10 @@ export function AdminPage() {
     const name = prompt("Enter organization name:");
     if (name) {
       const response = await httpClient.createOrganization(name);
-      if (response.data) {
-        if (response.data) {
+      if (response.Data) {
+        if (response.Data) {
           setUserOrganizations((prev) =>
-            response.data ? [response.data, ...prev] : prev
+            response.Data ? [response.Data, ...prev] : prev
           );
         }
         setShowSuccessMessage(true);
@@ -60,26 +64,26 @@ export function AdminPage() {
     }
   };
 
-  const handleCreateInvitee = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newInviteeEmail) {
-      const response = await httpClient.createInvitee(
-        newInviteeEmail,
-        newInviteeRole
-      );
-      if (response.data) {
-        if (response.data) {
-          setInvitees((prev) =>
-            response.data ? [response.data, ...prev] : prev
-          );
-        }
-        setNewInviteeEmail("");
-        setNewInviteeRole("member");
-        setShowSuccessMessage(true);
-        setTimeout(() => setShowSuccessMessage(false), 3000);
-      }
-    }
-  };
+  // const handleCreateInvitee = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (newInviteeEmail) {
+  //     const response = await httpClient.createInvitee(
+  //       newInviteeEmail,
+  //       newInviteeRole
+  //     );
+  //     if (response.data) {
+  //       if (response.data) {
+  //         setInvitees((prev) =>
+  //           response.data ? [response.data, ...prev] : prev
+  //         );
+  //       }
+  //       setNewInviteeEmail("");
+  //       setNewInviteeRole("member");
+  //       setShowSuccessMessage(true);
+  //       setTimeout(() => setShowSuccessMessage(false), 3000);
+  //     }
+  //   }
+  // };
 
   const PermissionRestrictContainer = ({
     children,
@@ -217,45 +221,45 @@ export function AdminPage() {
         >
           <div className="animate-fade-in">
             <h2 className="text-xl font-bold mb-4">Invitees Management</h2>
-            {currentUser?.role.name === "admin" && (
-              <form
-                onSubmit={handleCreateInvitee}
-                className="mb-6 flex gap-4 animate-slide-up"
-              >
-                <input
-                  type="email"
-                  value={newInviteeEmail}
-                  onChange={(e) => setNewInviteeEmail(e.target.value)}
-                  placeholder="Email address"
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-150"
-                  required
-                />
-                <select
-                  value={newInviteeRole}
-                  onChange={(e) =>
-                    setNewInviteeRole(e.target.value as "admin" | "member")
-                  }
-                  className="rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-150"
-                >
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                </select>
+            {/* {currentUser?.role.name === "admin" && (
+              // <form
+              //   onSubmit={handleCreateInvitee}
+              //   className="mb-6 flex gap-4 animate-slide-up"
+              // >
+              //   <input
+              //     type="email"
+              //     value={newInviteeEmail}
+              //     onChange={(e) => setNewInviteeEmail(e.target.value)}
+              //     placeholder="Email address"
+              //     className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-150"
+              //     required
+              //   />
+              //   <select
+              //     value={newInviteeRole}
+              //     onChange={(e) =>
+              //       setNewInviteeRole(e.target.value as "admin" | "member")
+              //     }
+              //     className="rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-150"
+              //   >
+              //     <option value="member">Member</option>
+              //     <option value="admin">Admin</option>
+              //   </select>
 
-                <button
-                  disabled={
-                    currentUser?.role.permissions.find(
-                      (p) => p.name === "invite:create"
-                    )
-                      ? false
-                      : true
-                  }
-                  type="submit"
-                  className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all duration-150 transform hover:scale-105"
-                >
-                  Invite User
-                </button>
-              </form>
-            )}
+              //   <button
+              //     disabled={
+              //       currentUser?.role.permissions.find(
+              //         (p) => p.name === "invite:create"
+              //       )
+              //         ? false
+              //         : true
+              //     }
+              //     type="submit"
+              //     className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all duration-150 transform hover:scale-105"
+              //   >
+              //     Invite User
+              //   </button>
+              // </form>
+            )} */}
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -391,36 +395,83 @@ export function AdminPage() {
       <nav className="bg-black text-white p-4 shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <NikeLogo className="h-8 w-auto animate-pulse-once" />
-            <span className="text-xl font-bold">Admin Portal</span>
+            <div className="flex items-center space-x-4">
+              <NikeLogo className="h-8 w-auto animate-pulse-once" />
+              <span className="text-xl font-bold">Admin Portal</span>
+            </div>
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowOrgDropdown((prev) => !prev)}
+                className="bg-gray-800 text-white px-4 py-2 rounded-lg focus:ring-2 focus:ring-white focus:outline-none transition-all duration-150 flex items-center"
+              >
+                {organizations.find(
+                  (org) => org.id === currentUser?.organizationId
+                )?.name || "Select Organization"}
+                <svg
+                  className={`ml-2 h-5 w-5 transition-transform duration-300 ${
+                    showOrgDropdown ? "transform rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </button>
+              {showOrgDropdown && (
+                <div
+                  className="absolute mt-2 w-full bg-white rounded-lg shadow-lg z-10 overflow-hidden animate-slide-down"
+                  style={{ animation: "slideDown 0.3s ease-out" }}
+                >
+                  {organizations.map((org, index) => (
+                    <button
+                      key={org.id}
+                      onClick={async () => {
+                        await switchOrgContext(org.id);
+                        setShowOrgDropdown(false);
+                      }}
+                      className={`block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-all duration-150 ${
+                        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      }`}
+                      style={{
+                        animation: `fadeIn 0.3s ease-out ${index * 0.1}s both`,
+                      }}
+                    >
+                      {org.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="relative">
-            <select
-              value={currentUser?.organizationId}
-              onChange={async (e) => {
-                const orgId = e.target.value;
-                await switchOrgContext(orgId);
-              }}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg"
-            >
-              {organizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10"></div>
+          <div className="relative flex items-center space-x-4">
             <span className="text-sm">
               {currentUser?.email} ({currentUser?.role.name})
             </span>
-            <button
-              onClick={logout}
-              className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors duration-150"
-            >
-              Sign Out
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown((prev) => !prev)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white"
+              >
+                {currentUser?.email.charAt(0).toUpperCase()}
+              </button>
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                  <button
+                    onClick={logout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>

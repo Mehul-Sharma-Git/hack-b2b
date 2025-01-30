@@ -1,8 +1,12 @@
-import { User, Invitee, Organization } from "../types";
+import { User, Invitee, Organization, Role } from "../types";
 import axios, { AxiosInstance } from "axios";
 
 export interface ApiResponse<T> {
-  data?: T;
+  Data?: T;
+  error?: string;
+}
+export interface NewResponse<T> {
+  Data?: T;
   error?: string;
 }
 
@@ -12,7 +16,7 @@ class HttpClient {
   constructor(baseURL: string) {
     console.log(baseURL);
     this.client = axios.create({
-      baseURL,
+      baseURL: `${baseURL}/auth`,
       timeout: 5000,
     });
   }
@@ -29,11 +33,11 @@ class HttpClient {
     password: string
   ): Promise<ApiResponse<{ token: string; user: any }>> {
     try {
-      const response = await this.client.post("/auth/login", {
+      const response = await this.client.post("/login", {
         email,
         password,
       });
-      return { data: response.data };
+      return { Data: response.data };
     } catch (error) {
       return {
         error: (error as any).response?.data?.message || "Login failed",
@@ -84,7 +88,7 @@ class HttpClient {
         reject({ error: "Invalid email or password" });
       }
       setTimeout(() => {
-        resolve({ data: mockResponse });
+        resolve({ Data: mockResponse });
       }, 1000);
     });
   }
@@ -93,10 +97,10 @@ class HttpClient {
     this.clearToken();
   }
 
-  async getUsers(id: string): Promise<ApiResponse<User[]>> {
+  async getUsers(id: string): Promise<ApiResponse<NewResponse<User[]>>> {
     try {
       const response = await this.client.get(`/org/${id}/users`);
-      return { data: response.data };
+      return { Data: response.data };
     } catch (error) {
       return {
         error:
@@ -105,10 +109,10 @@ class HttpClient {
     }
   }
 
-  async getInvitees(): Promise<ApiResponse<Invitee[]>> {
+  async getInvitees(id: string): Promise<ApiResponse<NewResponse<Invitee[]>>> {
     try {
-      const response = await this.client.get("/invitees");
-      return { data: response.data };
+      const response = await this.client.get(`/org/${id}/invitations`);
+      return { Data: response.data };
     } catch (error) {
       return {
         error:
@@ -116,14 +120,29 @@ class HttpClient {
       };
     }
   }
+  async getRoles(id: string): Promise<ApiResponse<NewResponse<Role[]>>> {
+    try {
+      const response = await this.client.get(`/org/${id}/roles`);
+      return { Data: response.data };
+    } catch (error) {
+      return {
+        error:
+          (error as any).response?.data?.message || "Failed to fetch roles",
+      };
+    }
+  }
 
   async createInvitee(
+    id: string,
     email: string,
     role: string
   ): Promise<ApiResponse<Invitee>> {
     try {
-      const response = await this.client.post("/invitees", { email, role });
-      return { data: response.data };
+      const response = await this.client.post(`/org/${id}/invitations`, {
+        email,
+        role,
+      });
+      return { Data: response.data };
     } catch (error) {
       return {
         error:
@@ -132,10 +151,10 @@ class HttpClient {
     }
   }
 
-  async getOrganizations(): Promise<ApiResponse<Organization[]>> {
+  async getOrganizations(): Promise<ApiResponse<NewResponse<Organization[]>>> {
     try {
-      const response = await this.client.get("/organizations");
-      return { data: response.data };
+      const response = await this.client.get("/orgs");
+      return { Data: response.data };
     } catch (error) {
       return {
         error:
@@ -150,10 +169,10 @@ class HttpClient {
     orgId: string
   ): Promise<ApiResponse<User>> {
     try {
-      const response = await this.client.get(`/current-user`, {
+      const response = await this.client.get(`/user/${userId}/org/${orgId}`, {
         params: { userId, orgId },
       });
-      return { data: response.data };
+      return { Data: response.data };
     } catch (error) {
       return {
         error:
@@ -349,14 +368,14 @@ class HttpClient {
     // Simulate an async operation using a Promise
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ data: mockResponse });
+        resolve({ Data: mockResponse });
       }, 1000);
     });
   }
   async testApi(): Promise<ApiResponse<any>> {
     try {
-      const response = await this.client.get("/auth/test");
-      return { data: response.data };
+      const response = await this.client.get("/test");
+      return { Data: response.data };
     } catch (error) {
       return {
         error: (error as any).response?.data?.message || "Failed to fetch data",
@@ -366,8 +385,8 @@ class HttpClient {
 
   async createOrganization(name: string): Promise<ApiResponse<Organization>> {
     try {
-      const response = await this.client.post("/organizations", { name });
-      return { data: response.data };
+      const response = await this.client.post("/auth", { name });
+      return { Data: response.data };
     } catch (error) {
       return {
         error:
