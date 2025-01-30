@@ -37,16 +37,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { userId, organizationsList, token, email } = response.Data;
       localStorage.setItem("token", token);
       httpClient.setToken(token);
-      console.log(response);
+      console.log("wdwsds", organizationsList);
       setOrganizations(organizationsList);
       const getUserData = await httpClient.getCurrentOrganizationData(
         userId,
         organizationsList[0].OrgId
       );
-      console.log("wdw", getUserData);
+      console.log("wdwsdxs", getUserData);
       if (getUserData.Data) {
         setEmail(email);
-        setCurrentUser({ ...getUserData.Data, email: email });
+        setCurrentUser({
+          ...getUserData.Data,
+          email: email,
+          organizationName: organizationsList[0].Name,
+        });
       }
     }
   };
@@ -58,7 +62,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         organizationId
       );
       if (getUserData.Data) {
-        setCurrentUser({ ...getUserData.Data, email: email });
+        setCurrentUser({
+          ...getUserData.Data,
+          email: email,
+          organizationName:
+            organizations.find((org) => org.OrgId === organizationId)?.Name ||
+            "",
+        });
+        httpClient.getUsers(organizationId);
+        httpClient.getInvitees(organizationId);
+        httpClient.getOrganizations(organizationId);
+        httpClient.getRoles(organizationId);
       }
     }
   };

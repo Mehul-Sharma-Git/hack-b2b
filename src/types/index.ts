@@ -15,6 +15,7 @@ export interface User {
   role: Role[];
   email: string;
   organizationId: string;
+  organizationName: string;
   CreatedDate: string;
 }
 export interface GetOrganizationUserData {
