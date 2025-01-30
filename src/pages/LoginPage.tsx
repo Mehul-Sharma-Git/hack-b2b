@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { NikeLogo } from '../components/NikeLogo';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { NikeLogo } from "../components/NikeLogo";
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -14,9 +14,10 @@ export function LoginPage() {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/admin');
+      navigate("/admin");
     } catch (err: any) {
-      setError(err.message);
+      console.log(err);
+      setError(err.error);
     }
   };
 
