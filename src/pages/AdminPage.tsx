@@ -8,7 +8,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { httpClient } from "../lib/api-client";
-import { User, Invitee, Organization } from "../types";
+import { User, Organization } from "../types";
 import { NikeLogo } from "../components/NikeLogo";
 import { useAuth } from "../context/AuthContext";
 
@@ -22,9 +22,10 @@ export function AdminPage() {
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
   const [roles, setRoles] = useState<any[]>([]);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
-
-  const [userOrganizations, setUserOrganizations] =
-    useState<Organization[]>(organizations);
+  const [showCreateOrgPopup, setShowCreateOrgPopup] = useState(false);
+  const [userOrganizations, setUserOrganizations] = useState<Organization[]>(
+    []
+  );
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -39,7 +40,7 @@ export function AdminPage() {
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+  }, [currentUser?.organizationId]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -47,11 +48,13 @@ export function AdminPage() {
       const [usersRes, inviteesRes, orgsRes, rolesRes] = await Promise.all([
         httpClient.getUsers(currentUser?.organizationId || ""),
         httpClient.getInvitees(currentUser?.organizationId || ""),
-        httpClient.getOrganizations(),
+        httpClient.getOrganizations(currentUser?.organizationId || ""),
         httpClient.getRoles(currentUser?.organizationId || ""),
       ]);
       if (usersRes.Data) setUsers(usersRes.Data.Data ?? []);
       if (inviteesRes.Data) setInvitees(inviteesRes.Data.Data ?? []);
+      console.log("orgsRes", orgsRes);
+      console.log(inviteesRes.Data);
       if (orgsRes.Data && orgsRes.Data.Data)
         setUserOrganizations(orgsRes.Data.Data);
       if (rolesRes.Data) setRoles(rolesRes.Data.Data ?? []);
@@ -67,20 +70,6 @@ export function AdminPage() {
     }, {});
   }, [roles]);
 
-  const handleCreateOrg = async () => {
-    const name = prompt("Enter organization name:");
-    if (name) {
-      const response = await httpClient.createOrganization(name);
-      if (response.Data) {
-        setUserOrganizations((prev) =>
-          response.Data ? [response.Data, ...prev] : prev
-        );
-        setShowSuccessMessage(true);
-        setTimeout(() => setShowSuccessMessage(false), 3000);
-      }
-    }
-  };
-  console.log(invitees);
   const PermissionRestrictContainer = ({
     children,
     permissions,
@@ -166,12 +155,14 @@ export function AdminPage() {
                           <span
                             className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                             ${
-                              user.roleId === "admin"
+                              roleMap[user.RoleId] === "Admin"
                                 ? "bg-purple-100 text-purple-800"
+                                : roleMap[user.RoleId] === "SuperAdmin"
+                                ? "bg-blue-100 text-blue-800"
                                 : "bg-green-100 text-green-800"
                             }`}
                           >
-                            {user.RoleId}
+                            {roleMap[user.RoleId]}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -232,7 +223,7 @@ export function AdminPage() {
                   Restricted access to system features
                 </p>
                 <div className="mt-4 space-y-2">
-                  {["View Content", "Basic Interactions"].map((perm, i) => (
+                  {["No Admin Access"].map((perm, i) => (
                     <div
                       key={perm}
                       className="flex items-center text-sm text-gray-500"
@@ -260,20 +251,50 @@ export function AdminPage() {
                   Unrestricted access to all system features and settings
                 </p>
                 <div className="mt-4 space-y-2">
-                  {["Create", "Read", "Update", "Delete", "Manage Users"].map(
-                    (perm, i) => (
-                      <div
-                        key={perm}
-                        className="flex items-center text-sm text-gray-500"
-                        style={{
-                          animation: `slideIn 0.3s ease-out ${i * 0.1}s both`,
-                        }}
-                      >
-                        <div className="w-2 h-2 rounded-full bg-blue-400 mr-2" />
-                        {perm}
-                      </div>
-                    )
-                  )}
+                  {[
+                    "Create",
+                    "Read",
+                    "Update",
+                    "Delete",
+                    "Manage Organizations",
+                  ].map((perm, i) => (
+                    <div
+                      key={perm}
+                      className="flex items-center text-sm text-gray-500"
+                      style={{
+                        animation: `slideIn 0.3s ease-out ${i * 0.1}s both`,
+                      }}
+                    >
+                      <div className="w-2 h-2 rounded-full bg-blue-400 mr-2" />
+                      {perm}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="nike-card hover:scale-[1.02] transition-transform duration-200">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800">
+                    Developer
+                  </span>
+                  <Shield className="h-5 w-5 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Developer Access</h3>
+                <p className="text-gray-600">
+                  Access to development-related features and settings
+                </p>
+                <div className="mt-4 space-y-2">
+                  {["View Content", "Basic Interactions"].map((perm, i) => (
+                    <div
+                      key={perm}
+                      className="flex items-center text-sm text-gray-500"
+                      style={{
+                        animation: `slideIn 0.3s ease-out ${i * 0.1}s both`,
+                      }}
+                    >
+                      <div className="w-2 h-2 rounded-full bg-red-400 mr-2" />
+                      {perm}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -299,7 +320,7 @@ export function AdminPage() {
               {showInvitePopup && currentUser && (
                 <InvitePopup
                   setShowInvitePopup={setShowInvitePopup}
-                  currentUser={currentUser || {}}
+                  currentUser={currentUser as User}
                   setInvitees={setInvitees}
                   setShowSuccessMessage={setShowSuccessMessage}
                   roles={roles}
@@ -325,55 +346,72 @@ export function AdminPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {invitees.map((invitee, index) => (
-                      <tr
-                        key={invitee?.id}
-                        className="hover:bg-gray-50 transition-all duration-200"
-                        style={{
-                          animation: `slideIn 0.3s ease-out ${
-                            index * 0.05
-                          }s both`,
-                        }}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                              {invitee.EmailId[0]}
+                  {invitees.length ? (
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {invitees.map((invitee, index) => (
+                        <tr
+                          key={invitee?.id}
+                          className="hover:bg-gray-50 transition-all duration-200"
+                          style={{
+                            animation: `slideIn 0.3s ease-out ${
+                              index * 0.05
+                            }s both`,
+                          }}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                {invitee.EmailId[0]}
+                              </div>
+                              <div className="ml-4">{invitee?.EmailId}</div>
                             </div>
-                            <div className="ml-4">{invitee?.EmailId}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                             ${
                               roleMap[invitee.RoleIds[0]] === "Admin"
                                 ? "bg-purple-100 text-purple-800"
+                                : roleMap[invitee.RoleIds[0]] === "SuperAdmin"
+                                ? "bg-blue-100 text-blue-800"
                                 : "bg-green-100 text-green-800"
                             }`}
-                          >
-                            {invitee?.RoleIds[0]}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                            >
+                              {roleMap[invitee?.RoleIds[0]]}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                             ${
-                              invitee?.Status === "pending"
+                              invitee?.Status === "Invited"
                                 ? "bg-yellow-100 text-yellow-800"
                                 : "bg-blue-100 text-blue-800"
                             }`}
-                          >
-                            {invitee?.Status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(invitee?.CreatedDate).toLocaleDateString()}
+                            >
+                              {invitee?.Status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(
+                              invitee?.CreatedDate
+                            ).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  ) : (
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500"
+                        >
+                          No invitees available to display.
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
+                    </tbody>
+                  )}
                 </table>
               </div>
             </div>
@@ -385,9 +423,11 @@ export function AdminPage() {
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Organizations</h2>
-              {currentUser?.role[0].Name === "admin" && (
+              {currentUser?.role.find((role) =>
+                role.Permissions.some((p) => p.Name === "org:create")
+              ) && (
                 <button
-                  onClick={handleCreateOrg}
+                  onClick={() => setShowCreateOrgPopup(true)}
                   className="nike-button flex items-center gap-2"
                 >
                   <Building className="h-4 w-4" />
@@ -395,26 +435,45 @@ export function AdminPage() {
                 </button>
               )}
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {userOrganizations.map((org, index) => (
-                <div
-                  key={org.OrgId}
-                  className="nike-card hover:scale-[1.02] transition-transform duration-200"
-                  style={{
-                    animation: `fadeIn 0.3s ease-out ${index * 0.1}s both`,
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">{org.Name}</h3>
-                    <Building className="h-5 w-5 text-gray-400" />
+            {showCreateOrgPopup && (
+              <CreateOrgPopup
+                setShowCreateOrgPopup={setShowCreateOrgPopup}
+                setShowSuccessMessage={setShowSuccessMessage}
+                currentUser={currentUser as User}
+              />
+            )}
+            {userOrganizations.length ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {organizations.map((org, index) => (
+                  <div
+                    key={org.OrgId}
+                    className="nike-card hover:scale-[1.02] transition-transform duration-200"
+                    style={{
+                      animation: `fadeIn 0.3s ease-out ${index * 0.1}s both`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">{org.Name}</h3>
+                      <Building className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Users className="h-4 w-4" />
+                      <span>0 Members</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Users className="h-4 w-4" />
-                    <span>{users.length} Members</span>
-                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+                <div className="nike-card bg-gray-50 text-gray-800 animate-fade-in p-6 text-center">
+                  <Building className="w-12 h-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Organizations Available
+                  </h3>
+                  <p>There are no organizations available to display.</p>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         </PermissionRestrictContainer>
       ),
@@ -491,6 +550,11 @@ export function AdminPage() {
 
             <div className="flex items-center space-x-4">
               <div className="text-sm">{currentUser?.email}</div>
+              <div className="flex items-center space-x-4">
+                <span className="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
+                  {currentUser?.role[0] && roleMap[currentUser.role[0].Id]}
+                </span>
+              </div>
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => setShowDropdown((prev) => !prev)}
@@ -565,7 +629,6 @@ export function AdminPage() {
 const InvitePopup = ({
   currentUser,
   setShowInvitePopup,
-  setInvitees,
   setShowSuccessMessage,
   roles,
 }: {
@@ -640,6 +703,68 @@ const InvitePopup = ({
           </button>
           <button className="nike-button" onClick={handleInviteUser}>
             Invite
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CreateOrgPopup = ({
+  setShowCreateOrgPopup,
+  setShowSuccessMessage,
+  currentUser,
+}: {
+  setShowCreateOrgPopup: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowSuccessMessage: React.Dispatch<React.SetStateAction<boolean>>;
+  currentUser: User;
+}) => {
+  const [orgName, setOrgName] = useState("");
+  const handleCreateOrg = async () => {
+    if (orgName) {
+      try {
+        const response = await httpClient.createOrganization(
+          orgName,
+          currentUser.organizationName,
+          currentUser.organizationId
+        );
+
+        if (response) {
+          httpClient.getOrganizations(currentUser.organizationId);
+          setShowCreateOrgPopup(false);
+          setShowSuccessMessage(true);
+          setTimeout(() => setShowSuccessMessage(false), 3000);
+        }
+      } catch (error) {
+        console.error("Error creating organization:", error);
+      }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="nike-card p-6 w-full max-w-md animate-scale-in">
+        <h3 className="text-xl font-semibold mb-4">Create Organization</h3>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Organization Name
+          </label>
+          <input
+            type="text"
+            value={orgName}
+            onChange={(e) => setOrgName(e.target.value)}
+            className="nike-input w-full"
+          />
+        </div>
+        <div className="flex justify-end gap-2">
+          <button
+            className="nike-button-secondary"
+            onClick={() => setShowCreateOrgPopup(false)}
+          >
+            Cancel
+          </button>
+          <button className="nike-button" onClick={handleCreateOrg}>
+            Create
           </button>
         </div>
       </div>

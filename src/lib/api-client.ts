@@ -160,9 +160,11 @@ class HttpClient {
     }
   }
 
-  async getOrganizations(): Promise<ApiResponse<NewResponse<Organization[]>>> {
+  async getOrganizations(
+    id: string
+  ): Promise<ApiResponse<NewResponse<Organization[]>>> {
     try {
-      const response = await this.client.get("/orgs");
+      const response = await this.client.get(`/orgs?orgId=${id}`);
       return { Data: response.data };
     } catch (error) {
       return {
@@ -188,6 +190,7 @@ class HttpClient {
         email: response.data.Data.Email,
         role: response.data.Data,
         organizationId: orgId,
+        organizationName: "",
         CreatedDate: response.data.Data[0].CreatedDate,
       };
       return { Data: data };
@@ -211,9 +214,16 @@ class HttpClient {
     }
   }
 
-  async createOrganization(name: string): Promise<ApiResponse<Organization>> {
+  async createOrganization(
+    name: string,
+    oldName: string,
+    currentOrgId: string
+  ): Promise<ApiResponse<Organization>> {
     try {
-      const response = await this.client.post("/auth", { name });
+      const response = await this.client.post(`/org/${currentOrgId}/create`, {
+        Name: name,
+        OldName: oldName,
+      });
       return { Data: response.data };
     } catch (error) {
       return {
