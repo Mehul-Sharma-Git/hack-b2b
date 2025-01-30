@@ -1,16 +1,16 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { currentUser, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/login');
+    if (!isLoading && !currentUser) {
+      navigate("/login");
     }
-  }, [user, isLoading, navigate]);
+  }, [currentUser, isLoading, navigate]);
 
   if (isLoading) {
     return (
@@ -20,5 +20,5 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return user ? <>{children}</> : null;
+  return currentUser ? <>{children}</> : null;
 }
