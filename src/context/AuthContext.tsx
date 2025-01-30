@@ -31,21 +31,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await httpClient.mockLogin(email, password);
-    console.log(response);
+    const response = await httpClient.login(email, password);
+    console.log("login", response);
     if (response.error) throw new Error(response.error);
     if (response.Data) {
       const { userId, organizationsList, token } = response.Data;
       localStorage.setItem("token", token);
       httpClient.setToken(token);
       console.log(response);
-      setOrganizations(organizationsList);
-      const getUserData = await httpClient.mockGetCurrentOrganizationData(
-        userId,
-        organizationsList[0].id
-      );
+      setOrganizations(organizationsList || []);
+      let getUserData;
+      if (organizationsList.length) {
+        getUserData = await httpClient.mockGetCurrentOrganizationData(
+          userId,
+          organizationsList[0]?.id
+        );
+      }
 
-      if (getUserData.Data) {
+      if (getUserData?.Data) {
         setCurrentUser(getUserData.Data);
       }
     }
