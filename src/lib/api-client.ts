@@ -31,7 +31,13 @@ class HttpClient {
   async login(
     email: string,
     password: string
-  ): Promise<ApiResponse<{ token: string; user: any }>> {
+  ): Promise<
+    ApiResponse<{
+      userId: string;
+      organizationsList: { id: string; name: string }[];
+      token: string;
+    }>
+  > {
     try {
       const response = await this.client.post("/login", {
         email,
@@ -44,54 +50,54 @@ class HttpClient {
       };
     }
   }
-  async mockLogin(
-    email: string,
-    password: string
-  ): Promise<
-    ApiResponse<{
-      userId: string;
-      organizationsList: { id: string; name: string }[];
-      token: string;
-    }>
-  > {
-    // Mock response data
-    let mockResponse;
+  // async mockLogin(
+  //   email: string,
+  //   password: string
+  // ): Promise<
+  //   ApiResponse<{
+  //     userId: string;
+  //     organizationsList: { id: string; name: string }[];
+  //     token: string;
+  //   }>
+  // > {
+  //   // Mock response data
+  //   let mockResponse;
 
-    if (email === "admin@nike.com" && password === "password") {
-      mockResponse = {
-        userId: "userId1",
-        organizationsList: [
-          { id: "orgId1", name: "Organization One" },
-          { id: "orgId2", name: "Organization Two" },
-          { id: "orgId3", name: "Organization Three" },
-        ],
-        token: "mockToken",
-      };
-    } else {
-      mockResponse = {
-        userId: "userId2",
-        organizationsList: [
-          { id: "orgId1", name: "Organization One" },
-          { id: "orgId2", name: "Organization Two" },
-          { id: "orgId3", name: "Organization Three" },
-        ],
-        token: "mockToken",
-      };
-    }
+  //   if (email === "admin@nike.com" && password === "password") {
+  //     mockResponse = {
+  //       userId: "userId1",
+  //       organizationsList: [
+  //         { id: "orgId1", name: "Organization One" },
+  //         { id: "orgId2", name: "Organization Two" },
+  //         { id: "orgId3", name: "Organization Three" },
+  //       ],
+  //       token: "mockToken",
+  //     };
+  //   } else {
+  //     mockResponse = {
+  //       userId: "userId2",
+  //       organizationsList: [
+  //         { id: "orgId1", name: "Organization One" },
+  //         { id: "orgId2", name: "Organization Two" },
+  //         { id: "orgId3", name: "Organization Three" },
+  //       ],
+  //       token: "mockToken",
+  //     };
+  //   }
 
-    // Simulate an async operation using a Promise
-    return new Promise((resolve, reject) => {
-      if (
-        (email !== "admin@nike.com" && email !== "member@nike.com") ||
-        password !== "password"
-      ) {
-        reject({ error: "Invalid email or password" });
-      }
-      setTimeout(() => {
-        resolve({ Data: mockResponse });
-      }, 1000);
-    });
-  }
+  //   // Simulate an async operation using a Promise
+  //   return new Promise((resolve, reject) => {
+  //     if (
+  //       (email !== "admin@nike.com" && email !== "member@nike.com") ||
+  //       password !== "password"
+  //     ) {
+  //       reject({ error: "Invalid email or password" });
+  //     }
+  //     setTimeout(() => {
+  //       resolve({ Data: mockResponse });
+  //     }, 1000);
+  //   });
+  // }
 
   async logout() {
     this.clearToken();
