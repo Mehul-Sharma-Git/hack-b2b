@@ -132,28 +132,30 @@ export function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user, index) => (
-                      <tr
-                        key={user?.Id}
-                        className="hover:bg-gray-50 transition-all duration-200"
-                        style={{
-                          animation: `slideIn 0.3s ease-out ${
-                            index * 0.05
-                          }s both`,
-                        }}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                              {user.Email[0]}
+                    {users
+                      .filter((user) => user.Email)
+                      .map((user, index) => (
+                        <tr
+                          key={user?.Id}
+                          className="hover:bg-gray-50 transition-all duration-200"
+                          style={{
+                            animation: `slideIn 0.3s ease-out ${
+                              index * 0.05
+                            }s both`,
+                          }}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                {user.Email[0]}
+                              </div>
+                              <div className="ml-4">{user.Email}</div>
+                              <div className="ml-4">{user.Username}</div>
                             </div>
-                            <div className="ml-4">{user.Email}</div>
-                            <div className="ml-4">{user.Username}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                             ${
                               roleMap[user.RoleId] === "Admin"
                                 ? "bg-purple-100 text-purple-800"
@@ -161,15 +163,15 @@ export function AdminPage() {
                                 ? "bg-blue-100 text-blue-800"
                                 : "bg-green-100 text-green-800"
                             }`}
-                          >
-                            {roleMap[user.RoleId]}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(user?.CreatedDate).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
+                            >
+                              {roleMap[user.RoleId]}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(user?.CreatedDate).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
