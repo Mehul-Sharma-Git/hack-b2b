@@ -551,7 +551,17 @@ export function AdminPage() {
             <div className="flex items-center space-x-4">
               <div className="text-sm">{currentUser?.email}</div>
               <div className="flex items-center space-x-4">
-                <span className="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
+                <span
+                  className={`px-3 py-1 text-sm font-semibold rounded-full
+                  ${
+                    roleMap[currentUser?.role[0]?.Id ?? ""] === "Admin"
+                      ? "bg-purple-100 text-purple-800"
+                      : currentUser?.role[0]?.Id &&
+                        roleMap[currentUser.role[0].Id] === "SuperAdmin"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
                   {currentUser?.role[0] && roleMap[currentUser.role[0].Id]}
                 </span>
               </div>
