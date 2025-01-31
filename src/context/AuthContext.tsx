@@ -27,6 +27,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       setIsLoading(false);
     }
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const organizations = JSON.parse(
+      localStorage.getItem("organizations") || "[]"
+    );
+    const email = localStorage.getItem("email") || "";
+
+    if (currentUser && organizations && email) {
+      setCurrentUser(currentUser);
+      setOrganizations(organizations);
+      setEmail(email);
+    }
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -46,11 +57,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("wdwsdxs", getUserData);
       if (getUserData.Data) {
         setEmail(email);
+        localStorage.setItem("email", email);
         setCurrentUser({
           ...getUserData.Data,
-          email: email,
+          email: email || localStorage.getItem("email") || "",
           organizationName: organizationsList[0].Name,
         });
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            ...getUserData.Data,
+            email: email || localStorage.getItem("email") || "",
+            organizationName: organizationsList[0].Name,
+          })
+        );
+        localStorage.setItem(
+          "organizations",
+          JSON.stringify(organizationsList)
+        );
       }
     }
   };
@@ -64,11 +88,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (getUserData.Data) {
         setCurrentUser({
           ...getUserData.Data,
-          email: email,
+          email: email || localStorage.getItem("email") || "",
           organizationName:
             organizations.find((org) => org.OrgId === organizationId)?.Name ||
             "",
         });
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            ...getUserData.Data,
+            email: email || localStorage.getItem("email") || "",
+            organizationName:
+              organizations.find((org) => org.OrgId === organizationId)?.Name ||
+              "",
+          })
+        );
+        localStorage.setItem("organizations", JSON.stringify(organizations));
         httpClient.getUsers(organizationId);
         httpClient.getInvitees(organizationId);
         httpClient.getOrganizations(organizationId);
@@ -81,6 +116,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("token");
     httpClient.clearToken();
     setCurrentUser(null);
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("organizations");
+    localStorage.removeItem("email");
   };
 
   return (

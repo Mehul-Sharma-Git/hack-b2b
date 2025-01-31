@@ -53,8 +53,6 @@ export function AdminPage() {
       ]);
       if (usersRes.Data) setUsers(usersRes.Data.Data ?? []);
       if (inviteesRes.Data) setInvitees(inviteesRes.Data.Data ?? []);
-      console.log("orgsRes", orgsRes);
-      console.log(inviteesRes.Data);
       if (orgsRes.Data && orgsRes.Data.Data)
         setUserOrganizations(orgsRes.Data.Data);
       if (rolesRes.Data) setRoles(rolesRes.Data.Data ?? []);
