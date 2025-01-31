@@ -310,14 +310,17 @@ export function AdminPage() {
           <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Invitees Management</h2>
-
-              <button
-                className="nike-button flex items-center gap-2"
-                onClick={() => setShowInvitePopup(true)}
-              >
-                <UserPlus className="h-4 w-4" />
-                Invite User
-              </button>
+              {currentUser?.role.find((role) =>
+                role.Permissions.some((p) => p.Name === "invite:create")
+              ) && (
+                <button
+                  className="nike-button flex items-center gap-2"
+                  onClick={() => setShowInvitePopup(true)}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite User
+                </button>
+              )}
 
               {showInvitePopup && currentUser && (
                 <InvitePopup
